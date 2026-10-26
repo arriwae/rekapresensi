@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PresensiPro - Modul Pengolahan & Rekapitulasi Presensi Karyawan</title>
+  <meta name="description" content="Aplikasi analisis dan rekapitulasi data presensi karyawan berbasis file CSV, IndexedDB, dan visualisasi interaktif tanpa pengunggahan ke server eksternal.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
+  
+  <!-- Core Design System -->
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/components.css">
+  
+  <!-- Offline PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+
+<div class="app-container">
+  
+  <!-- =========================================================================
+       SIDEBAR NAVIGATION
+       ========================================================================= -->
+  <aside class="app-sidebar">
+    <div class="sidebar-header">
+      <div class="brand-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <polyline points="16 11 18 13 22 9"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1>PresensiPro</h1>
+        <span>Analytics Engine</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Menu Utama</div>
+      
+      <div class="nav-item active" data-tab="tabDashboard" id="navDashboard">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+        <span>Dashboard Rekap</span>
+      </div>
+
+      <div class="nav-item" data-tab="tabImport" id="navImport">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>
+        <span>Impor Data Presensi</span>
+      </div>
+
+      <div class="nav-item" data-tab="tabEmployees" id="navEmployees">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>Rekap Karyawan</span>
+      </div>
+
+      <div class="nav-item" data-tab="tabComparison" id="navComparison">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>
+        <span>Perbandingan Bulan</span>
+      </div>
+
+      <div class="nav-item" data-tab="tabExport" id="navExport">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+        <span>Pusat Ekspor</span>
+      </div>
+
+      <div class="nav-section-title">Konfigurasi & Uji</div>
+
+      <div class="nav-item" data-tab="tabSettings" id="navSettings">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>Pengaturan Kebijakan</span>
+      </div>
+
+      <div class="nav-item" data-tab="tabTests" id="navTests">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2"/><path d="M8.5 2h7"/><path d="M7 16h10"/></svg>
+        <span>Pusat Uji & Validasi</span>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="db-status-card">
+        <div class="pulse-dot"></div>
+        <div>
+          <div style="font-weight: 700; color: var(--text-main);">IndexedDB Aktif</div>
+          <div id="sidebarDbRecordCount" style="color: var(--text-dim); font-size: 0.72rem;">0 catatan</div>
+        </div>
+      </div>
+      <div style="font-size: 0.7rem; color: var(--text-dim); line-height: 1.3;">
+        Privasi Penuh: Data diproses 100% lokal di browser Anda tanpa server eksternal.
+      </div>
+    </div>
+  </aside>
+
+  <!-- =========================================================================
+       MAIN APPLICATION AREA
+       ========================================================================= -->
+  <main class="app-main">
+    
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <button id="btnToggleSidebar" class="btn btn-icon btn-ghost" style="display: none;" title="Toggle Sidebar">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+        </button>
+        <h2 class="page-title" id="headerPageTitle">Dashboard Rekap Presensi</h2>
+      </div>
+
+      <div class="header-right">
+        <!-- Theme Toggle -->
+        <button class="btn btn-icon btn-secondary btn-theme-toggle" title="Ganti Tema (Gelap / Terang)">
+          <span class="theme-icon-container">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+          </span>
+        </button>
+
+        <!-- Quick Backup Button -->
+        <button class="btn btn-secondary btn-sm" id="btnDownloadBackup" title="Unduh Cadangan Database Lengkap (JSON)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>
+          <span>Backup JSON</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Body Container -->
+    <div class="app-body">
+      
+      <!-- =====================================================================
+           GLOBAL FILTER & SEARCH DRAWER
+           ===================================================================== -->
+      <section class="filter-bar-container" id="globalFilterSection">
+        <div class="filter-bar-row">
+          <!-- Month/Year Quick Selector -->
+          <div class="filter-group" style="min-width: 150px;">
+            <label class="filter-label" for="filterMonthYear">Bulan & Tahun</label>
+            <select id="filterMonthYear" class="form-select">
+              <option value="all">Semua Bulan</option>
+            </select>
+          </div>
+
+          <!-- Date Range: Start -->
+          <div class="filter-group" style="min-width: 130px;">
+            <label class="filter-label" for="filterStartDate">Tanggal Mulai</label>
+            <input type="date" id="filterStartDate" class="form-control">
+          </div>
+
+          <!-- Date Range: End -->
+          <div class="filter-group" style="min-width: 130px;">
+            <label class="filter-label" for="filterEndDate">Tanggal Akhir</label>
+            <input type="date" id="filterEndDate" class="form-control">
+          </div>
+
+          <!-- Employee Dropdown -->
+          <div class="filter-group" style="min-width: 160px;">
+            <label class="filter-label" for="filterEmployee">Karyawan</label>
+            <select id="filterEmployee" class="form-select">
+              <option value="all">Semua Karyawan</option>
+            </select>
+          </div>
+
+          <!-- Position Dropdown -->
+          <div class="filter-group" style="min-width: 150px;">
+            <label class="filter-label" for="filterPosition">Jabatan / Posisi</label>
+            <select id="filterPosition" class="form-select">
+              <option value="all">Semua Jabatan</option>
+            </select>
+          </div>
+
+          <!-- Work Unit / Department Dropdown -->
+          <div class="filter-group" style="min-width: 150px;">
+            <label class="filter-label" for="filterDepartment">Unit Kerja</label>
+            <select id="filterDepartment" class="form-select">
+              <option value="all">Semua Unit Kerja</option>
+            </select>
+          </div>
+
+          <!-- Location Dropdown -->
+          <div class="filter-group" style="min-width: 150px;">
+            <label class="filter-label" for="filterLocation">Lokasi Kantor</label>
+            <select id="filterLocation" class="form-select">
+              <option value="all">Semua Lokasi</option>
+            </select>
+          </div>
+
+          <!-- Main Status Dropdown -->
+          <div class="filter-group" style="min-width: 140px;">
+            <label class="filter-label" for="filterStatus">Status Presensi</label>
+            <select id="filterStatus" class="form-select">
+              <option value="all">Semua Status</option>
+              <option value="Hadir">Hadir</option>
+              <option value="Tidak Hadir">Tidak Hadir</option>
+              <option value="Izin">Izin</option>
+              <option value="Sakit">Sakit</option>
+              <option value="Dinas Luar">Dinas Luar</option>
+              <option value="Hari Libur">Hari Libur</option>
+              <option value="Perlu Ditinjau">Perlu Ditinjau</option>
+            </select>
+          </div>
+
+          <!-- Entry Status Dropdown -->
+          <div class="filter-group" style="min-width: 150px;">
+            <label class="filter-label" for="filterEntryStatus">Status Masuk</label>
+            <select id="filterEntryStatus" class="form-select">
+              <option value="all">Semua Status Masuk</option>
+              <option value="Tepat Waktu">Tepat Waktu</option>
+              <option value="Terlambat">Terlambat</option>
+              <option value="Melebihi Toleransi">Melebihi Toleransi</option>
+              <option value="Tidak Hadir">Tidak Hadir</option>
+            </select>
+          </div>
+
+          <!-- Exit Status Dropdown -->
+          <div class="filter-group" style="min-width: 150px;">
+            <label class="filter-label" for="filterExitStatus">Status Keluar</label>
+            <select id="filterExitStatus" class="form-select">
+              <option value="all">Semua Status Keluar</option>
+              <option value="Tepat Waktu">Tepat Waktu</option>
+              <option value="Pulang Awal">Pulang Awal</option>
+              <option value="Tidak Hadir">Tidak Hadir</option>
+            </select>
+          </div>
+
+          <!-- Reset & Action Buttons -->
+          <div class="filter-actions">
+            <button id="btnResetFilters" class="btn btn-outline btn-sm" title="Kembalikan semua filter ke kondisi awal">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>
+              <span>Reset</span>
+            </button>
+            <button id="btnFilterAllData" class="btn btn-secondary btn-sm">Semua</button>
+            <button id="btnFilterThisMonth" class="btn btn-secondary btn-sm">Bulan Ini</button>
+          </div>
+        </div>
+
+        <!-- Global Search Bar & Filter Indicators -->
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; pt-2; border-top: 1px solid var(--border-subtle); padding-top: 0.75rem;">
+          <div class="search-input-wrapper" style="width: 320px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" id="globalSearchInput" class="form-control" placeholder="Cari nama, jabatan, unit, atau lokasi...">
+          </div>
+
+          <div id="activeFilterSummary" style="flex: 1;">
+            <span class="text-muted" style="font-size: 0.8rem;">Filter Aktif: Default (Semua Data)</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Empty State Banner (Shown when DB is empty) -->
+      <div id="emptyDataBanner" class="card" style="display: none; margin-bottom: 1.5rem; background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(6, 182, 212, 0.15) 100%); border-color: rgba(99, 102, 241, 0.3);">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap;">
+          <div>
+            <h3 style="color: #ffffff; margin-bottom: 4px; display: flex; align-items: center; gap: 0.5rem;">
+              <span style="font-size: 1.3rem;">👋</span> Selamat Datang di PresensiPro!
+            </h3>
+            <p style="color: var(--text-muted); max-width: 600px;">
+              Database presensi lokal saat ini masih kosong. Anda dapat mengunggah file CSV sistem presensi Anda sendiri, atau muat data sampel realistis dengan 1 klik di bawah untuk langsung mencoba seluruh fitur.
+            </p>
+          </div>
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <button class="btn btn-primary" onclick="UIImporter.loadSampleFile('sample-data/presensi_oktober_2026.csv', 'presensi_oktober_2026.csv')">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>
+              <span>Muat Sampel Presensi Oktober 2026</span>
+            </button>
+            <button class="btn btn-secondary" onclick="document.querySelector('[data-tab=\'tabImport\']').click()">
+              <span>Buka Menu Impor CSV</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Review Alert Banner (Shown if there are 'Perlu Ditinjau' records) -->
+      <div id="statReviewContainer" class="card" style="display: none; margin-bottom: 1.5rem; border-color: rgba(244, 63, 94, 0.4); background: rgba(244, 63, 94, 0.08);">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div style="color: var(--danger); font-size: 1.25rem;">⚠️</div>
+            <div>
+              <strong style="color: var(--text-main); font-size: 0.95rem;">Perhatian: Ditemukan <span id="statReviewCount">0</span> Catatan dengan Status "Perlu Ditinjau"</strong>
+              <p style="margin: 0; font-size: 0.8rem; color: var(--text-muted);">
+                Data ini memiliki status presensi di luar kategori standar (Hadir, Tidak Hadir, Izin, Sakit, Dinas Luar, Hari Libur).
+              </p>
+            </div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="AppState.setFilter('status', 'Perlu Ditinjau')">
+            <span>Filter Data Perlu Ditinjau</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- =====================================================================
+           TAB 1: DASHBOARD REKAP PRESENSI
+           ===================================================================== -->
+      <section id="tabDashboard" class="tab-content active">
+        
+        <!-- Primary KPI Attendance Rate Banner -->
+        <div class="card" style="margin-bottom: 1.5rem; background: linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-surface-elevated) 100%);">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap;">
+            <div>
+              <span class="badge badge-hadir" style="margin-bottom: 0.5rem;">Tingkat Kehadiran Efektif</span>
+              <div style="display: flex; align-items: baseline; gap: 1rem;">
+                <h1 id="statOverallRate" style="font-size: 3rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.03em; line-height: 1;">
+                  —
+                </h1>
+                <div style="color: var(--text-muted); font-size: 0.85rem;" id="statWorkDaysLabel">
+                  Hari Kerja Berlaku: <strong>0</strong> hari <small class="text-dim">(Estimasi berdasarkan data kerja valid dalam file)</small>
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.35rem;">
+              <small class="text-dim" style="font-family: var(--font-mono);">Rumus: (Hadir Efektif / Hari Kerja Berlaku) × 100%</small>
+              <small class="text-dim">Hari Libur dikecualikan dari penyebut persentase</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- 10 Required Stat Cards Grid -->
+        <div class="stat-grid">
+          
+          <!-- 1. Total Karyawan Unik -->
+          <div class="stat-card c-primary">
+            <div class="stat-top">
+              <span class="stat-title">Karyawan Unik</span>
+              <div class="stat-icon c-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="statUniqueEmployees">0</div>
+            <div class="stat-desc">Bukan jumlah baris data</div>
+          </div>
+
+          <!-- 2. Total Catatan Presensi -->
+          <div class="stat-card c-secondary">
+            <div class="stat-top">
+              <span class="stat-title">Total Catatan</span>
+              <div class="stat-icon c-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="statTotalRecords">0</div>
+            <div class="stat-desc">Seluruh baris presensi valid</div>
+          </div>
+
+          <!-- 3. Jumlah Hadir -->
+          <div class="stat-card c-success">
+            <div class="stat-top">
+              <span class="stat-title">Hadir</span>
+              <div class="stat-icon c-success">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="statHadir">0</div>
+            <div class="stat-desc"><span class="badge badge-hadir" id="statHadirPct">0%</span> dari total catatan</div>
+          </div>
+
+          <!-- 4. Jumlah Tidak Hadir -->
+          <div class="stat-card c-danger">
+            <div class="stat-top">
+              <span class="stat-title">Tidak Hadir</span>
+              <div class="stat-icon c-danger">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="statTidakHadir">0</div>
+            <div class="stat-desc"><span class="badge badge-tidak-hadir" id="statTidakHadirPct">0%</span> dari total catatan</div>
+          </div>
+
+          <!-- 5. Jumlah Izin -->
+          <div class="stat-card c-warning">
+            <div class="stat-top">
+              <span class="stat-title">Izin</span>
+              <div class="stat-icon c-warning">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="statIzin">0</div>
+            <div class="stat-desc"><span class="badge badge-izin" id="statIzinPct">0%</span> dari total catatan</div>
+          </div>
+
+          <!-- 6. Jumlah Sakit -->
+          <div class="stat-card c-info">
+            <div class="stat-top">
+              <span class="stat-title">Sakit</span>
+              <div class="stat-icon c-info">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="statSakit">0</div>
+            <div class="stat-desc"><span class="badge badge-sakit" id="statSakitPct">0%</span> dari total catatan</div>
+          </div>
+
+          <!-- 7. Jumlah Dinas Luar -->
+          <div class="stat-card c-purple">
+            <div class="stat-top">
+              <span class="stat-title">Dinas Luar</span>
+              <div class="stat-icon c-purple">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="m17 5-5-3-5 3"/><path d="m17 19-5 3-5-3"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="statDinasLuar">0</div>
+            <div class="stat-desc"><span class="badge badge-dinas-luar" id="statDinasLuarPct">0%</span> dari total catatan</div>
+          </div>
+
+          <!-- 8. Jumlah Hari Libur -->
+          <div class="stat-card c-libur">
+            <div class="stat-top">
+              <span class="stat-title">Hari Libur</span>
+              <div class="stat-icon c-libur">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 2v4"/><path d="M16 2v4"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="statHariLibur">0</div>
+            <div class="stat-desc"><span class="badge badge-hari-libur" id="statHariLiburPct">0%</span> Dikecualikan dari hari kerja</div>
+          </div>
+
+          <!-- 9. Jumlah Karyawan Terlambat (Unique employees vs total occurrences) -->
+          <div class="stat-card c-warning">
+            <div class="stat-top">
+              <span class="stat-title">Karyawan Terlambat</span>
+              <div class="stat-icon c-warning">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="statLateEmployees">0</div>
+            <div class="stat-desc"><span class="badge badge-terlambat" id="statLateOccurrences">0 total kejadian</span></div>
+          </div>
+
+          <!-- 10. Jumlah Karyawan Pulang Awal (Unique employees vs total occurrences) -->
+          <div class="stat-card c-purple">
+            <div class="stat-top">
+              <span class="stat-title">Karyawan Pulang Awal</span>
+              <div class="stat-icon c-purple">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="statEarlyLeaveEmployees">0</div>
+            <div class="stat-desc"><span class="badge badge-pulang-awal" id="statEarlyLeaveOccurrences">0 total kejadian</span></div>
+          </div>
+
+        </div>
+
+        <!-- 6 Required Visualizations Chart Grid -->
+        <div class="chart-grid">
+          
+          <!-- Chart 1: Distribusi Status Presensi -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+                  Distribusi Status Presensi
+                </div>
+                <div class="card-subtitle">Komposisi kehadiran berdasarkan kolom Status utama</div>
+              </div>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="chartStatusDist"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 2: Tren Kehadiran Harian -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                  Tren Kehadiran Harian
+                </div>
+                <div class="card-subtitle">Jumlah hadir vs tidak hadir per tanggal presensi</div>
+              </div>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="chartDailyTrend"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 3: Persentase Kehadiran per Karyawan -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                  Peringkat Kehadiran Karyawan (%)
+                </div>
+                <div class="card-subtitle">Persentase kehadiran individual terhadap hari kerja berlaku</div>
+              </div>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="chartEmployeeRates"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 4: Perbandingan Kehadiran Berdasarkan Jabatan -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                  Perbandingan Berdasarkan Jabatan
+                </div>
+                <div class="card-subtitle">Rata-rata tingkat kehadiran (%) antar divisi posisi kerja</div>
+              </div>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="chartPositionComparison"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 5: Perbandingan Berdasarkan Unit Kerja / Lokasi -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Perbandingan Berdasarkan Unit Kerja
+                </div>
+                <div class="card-subtitle">Tingkat kehadiran vs jumlah keterlambatan per departemen</div>
+              </div>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="chartDepartmentComparison"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 6: Tren Keterlambatan dan Pulang Awal -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  Tren Keterlambatan & Pulang Awal
+                </div>
+                <div class="card-subtitle">Frekuensi ketepatan waktu kedatangan dan kepulangan</div>
+              </div>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="chartPunctualityTrend"></canvas>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- =====================================================================
+           TAB 2: IMPOR DATA PRESENSI
+           ===================================================================== -->
+      <section id="tabImport" class="tab-content">
+        
+        <!-- Drag and drop zone -->
+        <div class="card" style="margin-bottom: 1.5rem;">
+          <div class="dropzone-container" id="dropzone">
+            <input type="file" id="csvFileInput" class="hidden-file-input" accept=".csv,text/csv,text/plain">
+            <div class="dropzone-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>
+            </div>
+            <div class="dropzone-title">Tarik & Letakkan File CSV Presensi ke Sini</div>
+            <div class="dropzone-desc">
+              Atau klik untuk memilih berkas dari komputer Anda. Aplikasi secara otomatis mengenali format kolom standar ekspor presensi, delimiter (koma/titik koma/tab), dan berbagai format tanggal.
+            </div>
+            <button class="btn btn-primary" type="button">
+              Pilih Berkas CSV
+            </button>
+          </div>
+
+          <!-- Sample datasets helper bar -->
+          <div style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+            <div>
+              <strong style="font-size: 0.85rem; color: var(--text-main);">Uji Coba Cepat dengan Contoh Berkas:</strong>
+              <div style="font-size: 0.78rem; color: var(--text-muted);">Gunakan contoh data presensi yang sudah disiapkan untuk pengujian langsung</div>
+            </div>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <button class="btn btn-secondary btn-sm" id="btnLoadSampleOct">
+                <span>Contoh Oktober 2026</span>
+              </button>
+              <button class="btn btn-secondary btn-sm" id="btnLoadSampleNov">
+                <span>Contoh November 2026 (Bulan Berikutnya)</span>
+              </button>
+              <button class="btn btn-outline btn-sm" id="btnLoadSampleEdge" title="Contoh data khusus dengan Hari Libur, nilai '-', duplikat, dan status tak dikenal">
+                <span>Contoh Uji Kasus Khusus (Edge Cases)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Import History Section -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                Riwayat Berkas yang Pernah Diimpor
+              </div>
+              <div class="card-subtitle">Daftar batch data presensi yang tersimpan di IndexedDB browser</div>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Nama Berkas</th>
+                  <th>Waktu Impor</th>
+                  <th>Jumlah Catatan</th>
+                  <th>Karyawan Unik</th>
+                  <th>Rentang Tanggal</th>
+                  <th>Status Validasi</th>
+                  <th style="text-align: right;">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="importHistoryBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- =====================================================================
+           TAB 3: REKAP INDIVIDUAL KARYAWAN
+           ===================================================================== -->
+      <section id="tabEmployees" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                Tabel Rekapitulasi Presensi per Karyawan
+              </div>
+              <div class="card-subtitle">Klik nama karyawan untuk melihat rincian riwayat presensi harian lengkap</div>
+            </div>
+            
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <div class="search-input-wrapper" style="width: 240px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <input type="text" id="employeeTabSearch" class="form-control" placeholder="Cari nama karyawan...">
+              </div>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th class="sortable" onclick="UIEmployees.setSort('nama')">Nama Karyawan ↕</th>
+                  <th>Jabatan/Posisi</th>
+                  <th>Unit Kerja</th>
+                  <th style="text-align: center;" class="sortable" onclick="UIEmployees.setSort('hadir')">Hadir ↕</th>
+                  <th style="text-align: center;" class="sortable" onclick="UIEmployees.setSort('tidakHadir')">Tidak Hadir ↕</th>
+                  <th style="text-align: center;">Izin</th>
+                  <th style="text-align: center;">Sakit</th>
+                  <th style="text-align: center;">Dinas Luar</th>
+                  <th style="text-align: center;">Hari Libur</th>
+                  <th style="text-align: center;" class="sortable" onclick="UIEmployees.setSort('lateOccurrences')">Terlambat ↕</th>
+                  <th style="text-align: center;">Pulang Awal</th>
+                  <th style="min-width: 150px;" class="sortable" onclick="UIEmployees.setSort('attendanceRate')">Persentase Hadir ↕</th>
+                </tr>
+              </thead>
+              <tbody id="employeeRecapTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="table-pagination">
+            <div id="empPaginationInfo">Menampilkan 0–0 dari 0 karyawan</div>
+            <div class="pagination-controls">
+              <button class="btn btn-outline btn-sm" id="btnEmpPrev">Sebelumnya</button>
+              <button class="btn btn-outline btn-sm" id="btnEmpNext">Selanjutnya</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           TAB 4: PERBANDINGAN ANTARBULAN
+           ===================================================================== -->
+      <section id="tabComparison" class="tab-content">
+        <div class="card" style="margin-bottom: 1.5rem;">
+          <div class="card-header">
+            <div>
+              <div class="card-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>
+                Pilih Periode Bulan untuk Perbandingan
+              </div>
+              <div class="card-subtitle">Bandingkan metrik kehadiran, kedisiplinan, dan keterlambatan antar dua bulan</div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: center;">
+            <div style="flex: 1; min-width: 220px;">
+              <label class="filter-label" for="compMonthA">Bulan Acuan (Periode A):</label>
+              <select id="compMonthA" class="form-select" style="margin-top: 4px;"></select>
+            </div>
+            <div style="font-size: 1.5rem; color: var(--text-dim); margin-top: 1rem;">➔</div>
+            <div style="flex: 1; min-width: 220px;">
+              <label class="filter-label" for="compMonthB">Bulan Pembanding (Periode B):</label>
+              <select id="compMonthB" class="form-select" style="margin-top: 4px;"></select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Delta comparison stat cards -->
+        <div class="stat-grid" id="comparisonCardsContainer" style="margin-bottom: 1.5rem;">
+          <!-- Dynamically populated -->
+        </div>
+
+        <!-- Side by side chart -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Visualisasi Perbandingan Antarbulan</div>
+              <div class="card-subtitle">Grafik komparatif kategori kehadiran dan keterlambatan</div>
+            </div>
+          </div>
+          <div class="chart-wrapper" style="height: 340px;">
+            <canvas id="chartComparisonBar"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           TAB 5: PUSAT EKSPOR LAPORAN
+           ===================================================================== -->
+      <section id="tabExport" class="tab-content">
+        <div class="card" style="margin-bottom: 1.5rem;">
+          <div class="card-header">
+            <div>
+              <div class="card-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                Pusat Unduh Laporan Rekapitulasi (CSV)
+              </div>
+              <div class="card-subtitle">Semua file ekspor menyertakan metadata waktu unduh dan filter aktif dalam berkas</div>
+            </div>
+          </div>
+          <p>
+            Pilih salah satu format laporan di bawah untuk mengunduh rekapan data dalam format file CSV standar yang siap dibuka di Microsoft Excel, Google Sheets, atau sistem HRIS internal.
+          </p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+          
+          <!-- 1. Rekap Keseluruhan -->
+          <div class="card">
+            <h4 style="margin-bottom: 0.35rem;">1. Rekap Keseluruhan</h4>
+            <p style="margin-bottom: 1rem; font-size: 0.8rem;">Ringkasan KPI tingkat kehadiran, jumlah hadir, tidak hadir, izin, sakit, dinas, dan hari kerja berlaku.</p>
+            <button class="btn btn-primary btn-sm" id="btnExportSummary" style="width: 100%;">
+              Unduh CSV Rekap Keseluruhan
+            </button>
+          </div>
+
+          <!-- 2. Rekap Setiap Karyawan -->
+          <div class="card">
+            <h4 style="margin-bottom: 0.35rem;">2. Rekap Setiap Karyawan</h4>
+            <p style="margin-bottom: 1rem; font-size: 0.8rem;">Daftar baris per karyawan: hari kerja berlaku, hadir, sakit, izin, terlambat, dan persentase kehadiran.</p>
+            <button class="btn btn-primary btn-sm" id="btnExportEmployees" style="width: 100%;">
+              Unduh CSV Rekap Karyawan
+            </button>
+          </div>
+
+          <!-- 3. Rekap Harian -->
+          <div class="card">
+            <h4 style="margin-bottom: 0.35rem;">3. Rekap Harian</h4>
+            <p style="margin-bottom: 1rem; font-size: 0.8rem;">Rincian total kehadiran, ketidakhadiran, keterlambatan, dan libur yang diagregasi per tanggal kalender.</p>
+            <button class="btn btn-secondary btn-sm" id="btnExportDaily" style="width: 100%;">
+              Unduh CSV Rekap Harian
+            </button>
+          </div>
+
+          <!-- 4. Rekap Bulanan -->
+          <div class="card">
+            <h4 style="margin-bottom: 0.35rem;">4. Rekap Bulanan</h4>
+            <p style="margin-bottom: 1rem; font-size: 0.8rem;">Agregasi per bulan (YYYY-MM) beserta persentase kehadiran dan tren keterlambatan bulanan.</p>
+            <button class="btn btn-secondary btn-sm" id="btnExportMonthly" style="width: 100%;">
+              Unduh CSV Rekap Bulanan
+            </button>
+          </div>
+
+          <!-- 5. Rekap per Jabatan -->
+          <div class="card">
+            <h4 style="margin-bottom: 0.35rem;">5. Rekap per Jabatan/Posisi</h4>
+            <p style="margin-bottom: 1rem; font-size: 0.8rem;">Perbandingan kehadiran, ketidakhadiran, dan kedisiplinan yang dikelompokkan menurut posisi pekerjaan.</p>
+            <button class="btn btn-secondary btn-sm" id="btnExportPosition" style="width: 100%;">
+              Unduh CSV Rekap Jabatan
+            </button>
+          </div>
+
+          <!-- 6. Rekap per Unit Kerja -->
+          <div class="card">
+            <h4 style="margin-bottom: 0.35rem;">6. Rekap per Unit Kerja / Divisi</h4>
+            <p style="margin-bottom: 1rem; font-size: 0.8rem;">Agregasi per unit kerja atau departemen untuk memantau performa kehadiran antar divisi.</p>
+            <button class="btn btn-secondary btn-sm" id="btnExportDepartment" style="width: 100%;">
+              Unduh CSV Rekap Unit Kerja
+            </button>
+          </div>
+
+          <!-- 7. Rekap Keterlambatan dan Pulang Awal -->
+          <div class="card">
+            <h4 style="margin-bottom: 0.35rem;">7. Rekap Keterlambatan & Pulang Awal</h4>
+            <p style="margin-bottom: 1rem; font-size: 0.8rem;">Log catatan kejadian presensi khusus yang berstatus Terlambat atau Pulang Awal beserta jam aktual.</p>
+            <button class="btn btn-secondary btn-sm" id="btnExportPunctuality" style="width: 100%;">
+              Unduh CSV Log Kedisiplinan
+            </button>
+          </div>
+
+          <!-- 8. Data yang Perlu Ditinjau -->
+          <div class="card">
+            <h4 style="margin-bottom: 0.35rem;">8. Data Perlu Ditinjau</h4>
+            <p style="margin-bottom: 1rem; font-size: 0.8rem;">Ekspor catatan yang memiliki status tidak dikenali atau format anomali untuk peninjauan admin.</p>
+            <button class="btn btn-outline btn-sm text-danger" id="btnExportReview" style="width: 100%;">
+              Unduh CSV Data Perlu Ditinjau
+            </button>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           TAB 6: PENGATURAN KEBIJAKAN & SISTEM
+           ===================================================================== -->
+      <section id="tabSettings" class="tab-content">
+        <div class="card" style="margin-bottom: 1.5rem;">
+          <div class="card-header">
+            <div>
+              <div class="card-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                Kebijakan Perhitungan Presensi Organisasi
+              </div>
+              <div class="card-subtitle">Sesuaikan aturan bisnis kehadiran dan analisis kedisiplinan</div>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+            
+            <!-- Kebijakan Dinas Luar -->
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border-subtle);">
+              <div>
+                <strong style="color: var(--text-main); font-size: 0.95rem;">Hitung Dinas Luar sebagai Kehadiran (Hadir)</strong>
+                <p style="margin-top: 2px; font-size: 0.82rem;">
+                  Jika aktif, catatan dengan status "Dinas Luar" akan dihitung sebagai kehadiran efektif dalam perhitungan persentase kehadiran: <code>(Hadir + Dinas Luar) / Hari Kerja</code>.
+                </p>
+              </div>
+              <label class="switch-label">
+                <input type="checkbox" id="settingDinasLuarAsHadir" class="switch-input">
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+
+            <!-- Kebijakan Toleransi -->
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border-subtle);">
+              <div>
+                <strong style="color: var(--text-main); font-size: 0.95rem;">Gabungkan "Melebihi Toleransi" ke dalam Kategori "Terlambat"</strong>
+                <p style="margin-top: 2px; font-size: 0.82rem;">
+                  Sesuai ketentuan, "Melebihi Toleransi" secara default ditampilkan sebagai kategori aslinya. Aktifkan opsi ini jika ingin menggabungkannya ke statistik keterlambatan.
+                </p>
+              </div>
+              <label class="switch-label">
+                <input type="checkbox" id="settingCombineTolerance" class="switch-input">
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Database Backup, Restore, and Reset -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>
+                Manajemen Cadangan Data (Backup & Restore)
+              </div>
+              <div class="card-subtitle">Cadangkan atau pulihkan seluruh database IndexedDB secara aman</div>
+            </div>
+          </div>
+
+          <p style="margin-bottom: 1.25rem;">
+            Karena aplikasi bekerja 100% di browser Anda tanpa server eksternal, Anda disarankan mengunduh file cadangan JSON secara berkala agar dapat dipindahkan ke perangkat lain atau dipulihkan sewaktu-waktu.
+          </p>
+
+          <input type="file" id="restoreFileInput" style="display: none;" accept=".json">
+
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <button class="btn btn-secondary" onclick="UISettings.downloadBackup()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+              <span>Unduh Cadangan Lengkap (JSON)</span>
+            </button>
+            <button class="btn btn-secondary" id="btnTriggerRestore">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>
+              <span>Pulihkan dari File Cadangan</span>
+            </button>
+            <button class="btn btn-outline btn-danger" id="btnClearAllData" style="margin-left: auto;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/></svg>
+              <span>Kosongkan Seluruh Database</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           TAB 7: PUSAT PENGUJIAN & VALIDASI
+           ===================================================================== -->
+      <section id="tabTests" class="tab-content">
+        <div class="card" style="margin-bottom: 1.5rem;">
+          <div class="card-header">
+            <div>
+              <div class="card-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2"/><path d="M8.5 2h7"/><path d="M7 16h10"/></svg>
+                Pusat Pengujian Otomatis & Validasi Ketentuan Teknis
+              </div>
+              <div class="card-subtitle">Pengujian khusus untuk memastikan seluruh skenario edge cases ditangani dengan tepat</div>
+            </div>
+            <button class="btn btn-primary" id="btnRunTests">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <span>Jalankan Semua Pengujian</span>
+            </button>
+          </div>
+          <p style="margin-bottom: 0;">
+            Sesuai instruksi teknis, modul ini menguji secara mendalam skenario:
+            (1) Pengecualian status <code>Hari Libur</code> dari penyebut hari kerja,
+            (2) Penanganan waktu masuk/keluar berupa tanda <code>-</code> sebagai unavailable,
+            (3) Karyawan dengan beberapa catatan presensi,
+            (4) Deteksi & deduplikasi data duplikat, serta
+            (5) Penanganan status tidak dikenali ke kategori <code>Perlu Ditinjau</code>.
+          </p>
+        </div>
+
+        <div id="testResultsContainer">
+          <!-- Dynamically populated test assertions -->
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- =========================================================================
+     MODAL: PREVIEW & KONFIRMASI IMPOR CSV
+     ========================================================================= -->
+<div class="modal-backdrop" id="importPreviewModal">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-header">
+      <div>
+        <h3 style="color: var(--text-main);">Pratinjau Data & Konfirmasi Impor</h3>
+        <p style="font-size: 0.8rem; margin: 0;" id="previewFileName">filename.csv</p>
+      </div>
+      <button class="btn btn-icon btn-ghost" onclick="UIImporter.closePreviewModal()" title="Tutup">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Detection badges -->
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+        <span class="badge badge-izin" id="previewDelimiter">Delimiter: ,</span>
+        <span class="badge badge-izin" id="previewDateFormat">Format Tgl: YYYY-MM-DD</span>
+        <span class="badge badge-hadir" id="previewTotalRows">0 baris</span>
+        <span class="badge badge-hadir" id="previewUniqueEmployees">0 karyawan unik</span>
+        <span class="badge badge-hadir" id="previewDateRange">Rentang Tgl: —</span>
+        <span id="previewDuplicateBadge"></span>
+        <span id="previewReviewBadge"></span>
+      </div>
+
+      <!-- Duplicate Strategy Selector (if duplicates exist) -->
+      <div id="duplicateStrategyContainer" style="display: none; background: var(--bg-surface-elevated); padding: 0.85rem 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-medium); margin-bottom: 1rem;">
+        <strong style="font-size: 0.85rem; color: var(--text-main);">Aturan Penanganan Duplikasi:</strong>
+        <div style="display: flex; gap: 1.5rem; margin-top: 0.5rem; font-size: 0.85rem;">
+          <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
+            <input type="radio" name="duplicateStrategy" value="overwrite" checked>
+            <span><strong>Perbarui (Gantikan data lama)</strong> - Prioritaskan data yang baru diunggah</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
+            <input type="radio" name="duplicateStrategy" value="skip">
+            <span><strong>Lewati</strong> - Pertahankan data yang sudah ada di database</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Preview Table -->
+      <div style="font-size: 0.82rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-muted); text-transform: uppercase;">
+        Pratinjau 10 Baris Pertama:
+      </div>
+      <div class="table-responsive" style="max-height: 320px;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Karyawan</th>
+              <th>Tanggal</th>
+              <th>Waktu Masuk</th>
+              <th>Waktu Keluar</th>
+              <th>Status Utama</th>
+              <th>Status Masuk</th>
+              <th>Status Keluar</th>
+              <th>Lokasi</th>
+            </tr>
+          </thead>
+          <tbody id="previewTableBody">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" id="btnCancelImport">Batal</button>
+      <button class="btn btn-primary" id="btnConfirmImport">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+        <span>Konfirmasi & Simpan ke IndexedDB</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================================
+     MODAL: DETAIL RIWAYAT PRESENSI KARYAWAN
+     ========================================================================= -->
+<div class="modal-backdrop" id="employeeDetailModal">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-header">
+      <div>
+        <h3 style="color: var(--text-main);" id="modalEmpName">Nama Karyawan</h3>
+        <p style="font-size: 0.8rem; margin: 0; color: var(--text-muted);" id="modalEmpMeta">Jabatan • Unit • Lokasi</p>
+      </div>
+      <button class="btn btn-icon btn-ghost" id="btnCloseEmployeeDetail" title="Tutup">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Quick Metric Summary Cards -->
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1.25rem;">
+        <div style="background: var(--bg-surface-elevated); padding: 0.75rem; border-radius: var(--radius-md); text-align: center;">
+          <small class="text-dim">Tingkat Hadir</small>
+          <div style="font-size: 1.3rem; font-weight: 800; color: var(--success);" id="modalEmpRate">100%</div>
+        </div>
+        <div style="background: var(--bg-surface-elevated); padding: 0.75rem; border-radius: var(--radius-md); text-align: center;">
+          <small class="text-dim">Hari Hadir</small>
+          <div style="font-size: 1.3rem; font-weight: 800; color: var(--primary);" id="modalEmpHadir">0 hari</div>
+        </div>
+        <div style="background: var(--bg-surface-elevated); padding: 0.75rem; border-radius: var(--radius-md); text-align: center;">
+          <small class="text-dim">Terlambat</small>
+          <div style="font-size: 1.3rem; font-weight: 800; color: var(--warning);" id="modalEmpLate">0 kali</div>
+        </div>
+        <div style="background: var(--bg-surface-elevated); padding: 0.75rem; border-radius: var(--radius-md); text-align: center;">
+          <small class="text-dim">Pulang Awal</small>
+          <div style="font-size: 1.3rem; font-weight: 800; color: var(--purple);" id="modalEmpEarly">0 kali</div>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+        <strong style="font-size: 0.85rem; color: var(--text-main);">Log Presensi Harian Lengkap:</strong>
+        <button class="btn btn-outline btn-sm" id="btnExportIndividualCSV">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/></svg>
+          <span>Unduh CSV Log Karyawan Ini</span>
+        </button>
+      </div>
+
+      <div class="table-responsive" style="max-height: 380px;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Tanggal</th>
+              <th>Waktu Masuk</th>
+              <th>Waktu Keluar</th>
+              <th>Status Utama</th>
+              <th>Status Masuk</th>
+              <th>Status Keluar</th>
+              <th>Lokasi</th>
+              <th>Dinas Luar</th>
+            </tr>
+          </thead>
+          <tbody id="modalEmpLogBody">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="UIEmployees.closeDetailModal()">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================================
+     TOAST CONTAINER
+     ========================================================================= -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Vendor Scripts (Local offline Chart.js) -->
+<script src="vendor/chart.umd.min.js"></script>
+
+<!-- Application Modules -->
+<script src="js/icons.js"></script>
+<script src="js/csv-parser.js"></script>
+<script src="js/attendance-rules.js"></script>
+<script src="js/db.js"></script>
+<script src="js/state.js"></script>
+<script src="js/ui-importer.js"></script>
+<script src="js/ui-dashboard.js"></script>
+<script src="js/ui-employees.js"></script>
+<script src="js/ui-comparison.js"></script>
+<script src="js/ui-export.js"></script>
+<script src="js/ui-settings.js"></script>
+<script src="js/test-suite.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
